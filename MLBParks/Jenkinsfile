@@ -14,7 +14,7 @@ podTemplate(
   ]
 )
 **/
-{
+//{
   node {
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
@@ -152,4 +152,4 @@ def getGroupIdFromPom(pom) {
 def getArtifactIdFromPom(pom) {
   def matcher = readFile(pom) =~ '<artifactId>(.+)</artifactId>'
   matcher ? matcher[0][1] : null
-}
+//}
