@@ -15,7 +15,7 @@ oc project ${GUID}-parks-dev
 oc policy add-role-to-user edit system:serviceaccount:70fa-jenkins:jenkins -n 70fa-parks-dev
 
 oc new-app --name=mongodb -e MONGODB_USER=mongodb_user -e MONGODB_PASSWORD=mongodb_password -e MONGODB_DATABASE=mongodb -e MONGODB_ADMIN_PASSWORD=mongodb_admin_password     registry.access.redhat.com/rhscl/mongodb-26-rhel7
-# oc pause dc/mongodb 
+oc rollout pause dc/mongodb 
 echo "apiVersion: "v1"
 kind: "PersistentVolumeClaim"
 metadata:
@@ -27,8 +27,8 @@ spec:
     requests:
       storage: "2Gi"" | oc create -f -
 
-oc set volume dc/mongodb --add --overwrite --type=persistentVolume --name=mongo-pv --claim-name=mongo-pvc --mount-path=/data --containers=*
-# oc resume dc/mongodb
+oc set volume dc/mongodb --add --type=persistentVolumeClaim --name=mongo-pv --claim-name=mongo-pvc --mount-path=/data --containers=*
+oc rollout resume dc/mongodb
 
 
 oc new-build --binary=true --name=mlbparks openjdk:8 
