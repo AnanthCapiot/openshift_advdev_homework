@@ -20,15 +20,17 @@ podTemplate(
     // You need to build the application in directory `MLBParks`.
     // Also copy "../nexus_settings.xml" to your build directory
     // and replace 'GUID' in the file with your ${GUID} to point to >your< Nexus instance
+    
+    def mvnCmd = "mvn -s ./nexus_openshift_settings.xml"
+
+    // Checkout Source Code
+    stage('Checkout Source') {
+      // TBD
+
+      git url: 'https://github.com/vivek-capiot/openshift_advdev_homework.git'
+    }
+    
     dir('MLBParks') {
-      def mvnCmd = "mvn -s ./nexus_openshift_settings.xml"
-
-      // Checkout Source Code
-      stage('Checkout Source') {
-        // TBD
-
-        git url: 'https://github.com/vivek-capiot/openshift_advdev_homework.git'
-      }
 
       // The following variables need to be defined at the top level
       // and not inside the scope of a stage - otherwise they would not
