@@ -24,7 +24,7 @@ podTemplate(
     // Also copy "../nexus_settings.xml" to your build directory
     // and replace 'GUID' in the file with your ${GUID} to point to >your< Nexus instance
     
-    def mvnCmd = "mvn -s ./nexus_openshift_settings.xml"
+    
 
     // Checkout Source Code
     stage('Checkout Source') {
@@ -34,6 +34,7 @@ podTemplate(
     }
     
     dir('MLBParks') {
+      def mvnCmd = "mvn -s ../nexus_openshift_settings.xml"
 
       // The following variables need to be defined at the top level
       // and not inside the scope of a stage - otherwise they would not
