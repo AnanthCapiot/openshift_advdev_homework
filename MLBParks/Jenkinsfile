@@ -34,8 +34,9 @@ podTemplate(
     }
     
     
-    def mvnCmd = "mvn -s ../nexus_openshift_settings.xml"
+    def mvnCmd = "mvn -s ./nexus_openshift_settings.xml"
 
+    sh "cd MLBParks"
     // The following variables need to be defined at the top level
     // and not inside the scope of a stage - otherwise they would not
     // be accessible from other stages.
