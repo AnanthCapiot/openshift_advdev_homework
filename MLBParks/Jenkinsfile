@@ -84,7 +84,7 @@ podTemplate(
       stage('Build and Tag OpenShift Image') {
         echo "Building OpenShift container image tasks:${devTag}"
 
-        sh "oc start-build tasks --follow --from-file=./target/mlbparks.war -n ${GUID}-parks-dev"
+        sh "oc start-build mlbparks --follow --from-file=./target/mlbparks.war -n ${GUID}-parks-dev"
 
         // OR use the file you just published into Nexus:
         // sh "oc start-build tasks --follow --from-file=http://nexus3.${GUID}-nexus.svc.cluster.local:8081/repository/releases/org/jboss/quickstarts/eap/tasks/${version}/tasks-${version}.war -n ${GUID}-parks-dev"
@@ -100,8 +100,8 @@ podTemplate(
         sh "oc set image dc/mlbparks mlbparks=docker-registry.default.svc:5000/${GUID}-parks-dev/mlbparks:${devTag} -n ${GUID}-parks-dev"
 
         // Update the Config Map which contains the users for the Tasks application
-        sh "oc delete configmap mlbparks-config -n 70fa-parks-dev --ignore-not-found=true"
-        sh "oc create configmap mlbparks-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-dev"
+        // sh "oc delete configmap mlbparks-config -n 70fa-parks-dev --ignore-not-found=true"
+        // sh "oc create configmap mlbparks-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-dev"
 
         // Deploy the development application.
         // Replace xyz-tasks-dev with the name of your production project
