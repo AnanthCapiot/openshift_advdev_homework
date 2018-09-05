@@ -1,5 +1,5 @@
 // Jenkinsfile for MLBParks
-/**
+
 podTemplate(
   label: "skopeo-pod",
   cloud: "openshift",
@@ -13,9 +13,9 @@ podTemplate(
     )
   ]
 )
-**/
-//{
-  node {
+
+{
+  node('skopeo-pod') {
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
 
@@ -137,7 +137,7 @@ podTemplate(
     }
  
   }
-//}
+}
 
 // Convenience Functions to read variables from the pom.xml
 // Do not change anything below this line.
