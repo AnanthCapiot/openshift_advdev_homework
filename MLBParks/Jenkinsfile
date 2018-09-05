@@ -15,7 +15,7 @@ podTemplate(
 )
 
 {
-  node {
+  node('skopeo-pod') {
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
 
