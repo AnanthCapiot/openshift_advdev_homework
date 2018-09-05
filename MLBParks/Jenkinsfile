@@ -107,7 +107,7 @@ podTemplate(
         // Replace xyz-tasks-dev with the name of your production project
         openshiftDeploy depCfg: 'mlbparks', namespace: '70fa-parks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
         openshiftVerifyDeployment depCfg: 'mlbparks', namespace: '70fa-parks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
-        openshiftVerifyService namespace: '70fa-parks-dev', svcName: 'tasks', verbose: 'false'
+        openshiftVerifyService namespace: '70fa-parks-dev', svcName: 'mlbparks', verbose: 'false'
       }
 
       // Run Integration Tests in the Development Environment.

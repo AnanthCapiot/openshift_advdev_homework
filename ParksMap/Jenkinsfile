@@ -1,4 +1,5 @@
 // Jenkinsfile for ParksMap
+
 podTemplate(
   label: "skopeo-pod",
   cloud: "openshift",
@@ -11,16 +12,133 @@ podTemplate(
       resourceLimitMemory: "2Gi"
     )
   ]
-) {
+)
+
+{
   node('skopeo-pod') {
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
 
     // Your Pipeline Code goes here. Make sure to use the ${GUID} and ${CLUSTER} parameters where appropriate
-    // You need to build the application in directory `ParksMap`.
+    // You need to build the application in directory `parksmap`.
     // Also copy "../nexus_settings.xml" to your build directory
     // and replace 'GUID' in the file with your ${GUID} to point to >your< Nexus instance
+    
+    
 
+    // Checkout Source Code
+    stage('Checkout Source') {
+      // TBD
+
+      git url: 'https://github.com/vivek-capiot/openshift_advdev_homework.git'
+    }
+    
+    
+    def mvnCmd = "mvn -s ../nexus_settings.xml"
+
+    dir('ParksMap') {
+
+      // The following variables need to be defined at the top level
+      // and not inside the scope of a stage - otherwise they would not
+      // be accessible from other stages.
+      // Extract version and other properties from the pom.xml
+      def groupId    = getGroupIdFromPom("pom.xml")
+      def artifactId = getArtifactIdFromPom("pom.xml")
+      def version    = getVersionFromPom("pom.xml")
+
+      // Set the tag for the development image: version + build number
+      def devTag  = "${version}-${BUILD_NUMBER}"
+      // Set the tag for the production image: version
+      def prodTag = "${version}"
+
+      // Using Maven build the war file
+      // Do not run tests in this step
+      stage('Build war') {
+        echo "Building version ${version}"
+
+        sh "${mvnCmd} clean package spring-boot:repackage -DskipTests -Dcom.redhat.xpaas.repo.redhatga"
+      }
+/**
+      // Using Maven run the unit tests
+      stage('Unit Tests') {
+        echo "Running Unit Tests"
+
+        sh "${mvnCmd} test"
+      }
+
+      // Using Maven call SonarQube for Code Analysis
+      stage('Code Analysis') {
+        echo "Running Code Analysis"
+
+        sh "${mvnCmd} sonar:sonar -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}/ -Dsonar.projectName=${JOB_BASE_NAME}-${devTag}"
+      }
+**/
+      // Publish the built war file to Nexus
+      stage('Publish to Nexus') {
+        echo "Publish to Nexus"
+
+        sh "${mvnCmd} deploy -DskipTests=true -DaltDeploymentRepository=nexus::default::http://nexus3.${GUID}-nexus.svc.cluster.local:8081/repository/releases"
+      }
+
+      // Build the OpenShift Image in OpenShift and tag it.
+      stage('Build and Tag OpenShift Image') {
+        echo "Building OpenShift container image parksmap:${devTag}"
+
+        // sh "oc start-build parksmap --follow --from-file=./target/parksmap.war -n ${GUID}-parks-dev"
+
+        // OR use the file you just published into Nexus:
+        sh "oc start-build parksmap --follow --from-file=http://nexus3.${GUID}-nexus.svc.cluster.local:8081/repository/releases/com/openshift/evg/roadshow/parksmap/${version}/parksmap-${version}.war -n ${GUID}-parks-dev"
+
+        // Tag the image using the devTag
+        openshiftTag alias: 'false', destStream: 'parksmap', destTag: devTag, destinationNamespace: '${GUID}-parks-dev', namespace: '${GUID}-parks-dev', srcStream: 'parksmap', srcTag: 'latest', verbose: 'false'
+      }
+
+      // Deploy the built image to the Development Environment.
+      stage('Deploy to Dev') {
+        echo "Deploying container image to Development Project"
+
+        sh "oc set image dc/parksmap parksmap=docker-registry.default.svc:5000/${GUID}-parks-dev/parksmap:${devTag} -n ${GUID}-parks-dev"
+
+        // Update the Config Map which contains the users for the Tasks application
+        // sh "oc delete configmap parksmap-config -n 70fa-parks-dev --ignore-not-found=true"
+        // sh "oc create configmap parksmap-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-dev"
+
+        // Deploy the development application.
+        // Replace xyz-parks-dev with the name of your production project
+        openshiftDeploy depCfg: 'parksmap', namespace: '70fa-parks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
+        openshiftVerifyDeployment depCfg: 'parksmap', namespace: '70fa-parks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
+        openshiftVerifyService namespace: '70fa-parks-dev', svcName: 'parksmap', verbose: 'false'
+      }
+
+      // Run Integration Tests in the Development Environment.
+      stage('Integration Tests') {
+        echo "Running Integration Tests"
+        // TBD
+      }
+
+      // Copy Image to Nexus Docker Registry
+      stage('Copy Image to Nexus Docker Registry') {
+        echo "Copy image to Nexus Docker Registry"
+        // TBD
+      }
+
+      // Blue/Green Deployment into Production
+      // -------------------------------------
+      // Do not activate the new version yet.
+      def destApp   = "tasks-green"
+      def activeApp = ""
+
+      stage('Blue/Green Production Deployment') {
+        // TBD
+      }
+
+      stage('Switch over to new Version') {
+        // TBD
+        echo "Switching Production application to ${destApp}."
+        // TBD
+      }
+    }
+ 
   }
 }
 
