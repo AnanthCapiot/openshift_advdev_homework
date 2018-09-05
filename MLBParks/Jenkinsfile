@@ -137,7 +137,7 @@ podTemplate(
     }
  
   }
-}
+//}
 
 // Convenience Functions to read variables from the pom.xml
 // Do not change anything below this line.
@@ -152,4 +152,4 @@ def getGroupIdFromPom(pom) {
 def getArtifactIdFromPom(pom) {
   def matcher = readFile(pom) =~ '<artifactId>(.+)</artifactId>'
   matcher ? matcher[0][1] : null
-//}
+}
