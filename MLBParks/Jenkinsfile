@@ -104,33 +104,61 @@ podTemplate(
         // sh "oc create configmap mlbparks-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-dev"
 
         // Deploy the development application.
-        // Replace xyz-tasks-dev with the name of your production project
+        // Replace 70fa-parks-dev with the name of your production project
         openshiftDeploy depCfg: 'mlbparks', namespace: '70fa-parks-dev', verbose: 'false', waitTime: '', waitUnit: 'sec'
         openshiftVerifyDeployment depCfg: 'mlbparks', namespace: '70fa-parks-dev', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'false', waitTime: '', waitUnit: 'sec'
         openshiftVerifyService namespace: '70fa-parks-dev', svcName: 'mlbparks', verbose: 'false'
       }
 
+      /**
       // Run Integration Tests in the Development Environment.
       stage('Integration Tests') {
         echo "Running Integration Tests"
-        // TBD
+        
+        echo "Health check MLBParks"
+        sh "curl -i  http://mlbparks-70fa-parks-dev.apps.na39.openshift.opentlc.com/ws/healthz"
       }
 
       // Copy Image to Nexus Docker Registry
       stage('Copy Image to Nexus Docker Registry') {
         echo "Copy image to Nexus Docker Registry"
-        // TBD
+        
+        sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) docker://docker-registry.default.svc.cluster.local:5000/70fa-parks-dev/mlbparks:${devTag} docker://nexus-registry.70fa-nexus.svc.cluster.local:5000/mlbparks:${devTag}"
+
+        // Tag the built image with the production tag.
+        // Replace 70fa-parks-dev with the name of your dev project
+        openshiftTag alias: 'false', destStream: 'mlbparks', destTag: prodTag, destinationNamespace: '70fa-parks-dev', namespace: '70fa-parks-dev', srcStream: 'mlbparks', srcTag: devTag, verbose: 'false'
       }
 
       // Blue/Green Deployment into Production
       // -------------------------------------
       // Do not activate the new version yet.
-      def destApp   = "tasks-green"
+      def destApp   = "mlbparks-green"
       def activeApp = ""
 
       stage('Blue/Green Production Deployment') {
-        // TBD
+        
+        activeApp = sh(returnStdout: true, script: "oc get route mlbparks -n 70fa-parks-prod -o jsonpath='{ .spec.to.name }'").trim()
+        if (activeApp == "mlbparks-green") {
+          destApp = "mlbparks-blue"
+        }
+        echo "Active Application:      " + activeApp
+        echo "Destination Application: " + destApp
+
+        // Update the Image on the Production Deployment Config
+        sh "oc set image dc/${destApp} ${destApp}=docker-registry.default.svc:5000/70fa-parks-dev/mlbparks:${prodTag} -n 70fa-parks-prod"
+
+        // Update the Config Map which contains the users for the Tasks application
+        sh "oc delete configmap ${destApp}-config -n 70fa-parks-prod --ignore-not-found=true"
+        // sh "oc create configmap ${destApp}-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-prod"
+
+        // Deploy the inactive application.
+        // Replace 70fa-parks-prod with the name of your production project
+        openshiftDeploy depCfg: destApp, namespace: '70fa-parks-prod', verbose: 'false', waitTime: '', waitUnit: 'sec'
+        openshiftVerifyDeployment depCfg: destApp, namespace: '70fa-parks-prod', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
+        openshiftVerifyService namespace: '70fa-parks-prod', svcName: destApp, verbose: 'false'
       }
+      **/
 
       stage('Switch over to new Version') {
         // TBD

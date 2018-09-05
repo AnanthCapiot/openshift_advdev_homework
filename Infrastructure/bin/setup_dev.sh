@@ -32,7 +32,7 @@ oc rollout resume dc/mongodb
 
 
 oc new-build --binary=true --strategy=source --name=mlbparks jboss-eap70-openshift:1.7 
-oc new-build --binary=true --strategy=source --name=nationalparks jboss-eap70-openshift:1.7
+oc new-build --binary=true --strategy=source --name=nationalparks redhat-openjdk18-openshift:1.2
 oc new-build --binary=true --strategy=source --name=parksmap redhat-openjdk18-openshift:1.2
 
 oc new-app 70fa-parks-dev/mlbparks:0.0-0 -e APPNAME="MLB Parks (Dev)" --name=mlbparks --allow-missing-imagestream-tags=true 
@@ -46,6 +46,9 @@ oc set triggers dc/parksmap --remove-all
 oc expose dc mlbparks --port 8080
 oc expose dc nationalparks --port 8080
 oc expose dc parksmap --port 8080
+
+oc expose svc mlbparks 
+oc expose svc nationalparks 
 oc expose svc parksmap 
 
 echo "DB_HOST=mongodb
@@ -60,8 +63,8 @@ oc create configmap nationalparks-config --from-literal="application-db.properti
 oc env dc/mlbparks --from=configmap/mlbparks-config
 oc env dc/nationalparks --from=configmap/nationalparks-config
 
-oc patch dc/mlbparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Abort, execNewPod: {containerName: mlbparks, command: ['curl -XGET http://localhost:8081/ws/data/load/']}}}}}"
-oc patch dc/nationalparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Abort, execNewPod: {containerName: nationalparks, command: ['curl -XGET http://localhost:8081/ws/data/load/']}}}}}"
+oc patch dc/mlbparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Ignore, execNewPod: {containerName: mlbparks, command: ['curl -XGET http://localhost:8080/ws/data/load/']}}}}}"
+oc patch dc/nationalparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Ignore, execNewPod: {containerName: nationalparks, command: ['curl -XGET http://localhost:8080/ws/data/load/']}}}}}"
 
 oc set probe dc/mlbparks --liveness --failure-threshold 3 --initial-delay-seconds 60 -- echo ok
 oc set probe dc/mlbparks --readiness --failure-threshold 3 --initial-delay-seconds 60 --get-url=http://:8080/ws/healthz/
