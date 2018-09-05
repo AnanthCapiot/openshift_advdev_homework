@@ -31,9 +31,9 @@ oc set volume dc/mongodb --add --type=persistentVolumeClaim --name=mongo-pv --cl
 oc rollout resume dc/mongodb
 
 
-oc new-build --binary=true --name=mlbparks openjdk:8 
-oc new-build --binary=true --name=nationalparks openjdk:8
-oc new-build --binary=true --name=parksmap openjdk:8
+oc new-build --binary=true --strategy=source --name=mlbparks openjdk:8 
+oc new-build --binary=true --strategy=source --name=nationalparks openjdk:8
+oc new-build --binary=true --strategy=source --name=parksmap openjdk:8
 
 oc new-app 70fa-parks-dev/mlbparks:0.0-0 -e APPNAME="MLB Parks (Dev)" --name=mlbparks --allow-missing-imagestream-tags=true 
 oc new-app 70fa-parks-dev/nationalparks:0.0-0 -e APPNAME="National Parks (Dev)" --name=nationalparks --allow-missing-imagestream-tags=true 
