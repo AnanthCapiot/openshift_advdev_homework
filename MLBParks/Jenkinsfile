@@ -1,4 +1,5 @@
 // Jenkinsfile for MLBParks
+/**
 podTemplate(
   label: "skopeo-pod",
   cloud: "openshift",
@@ -11,8 +12,10 @@ podTemplate(
       resourceLimitMemory: "2Gi"
     )
   ]
-) {
-  node('skopeo-pod') {
+)
+**/
+{
+  node {
     echo "GUID: ${GUID}"
     echo "CLUSTER: ${CLUSTER}"
 
