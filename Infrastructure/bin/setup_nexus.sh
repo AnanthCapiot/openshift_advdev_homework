@@ -6,8 +6,9 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-oc project ${GUID}-nexus
+
 GUID=$1
+oc project $GUID-nexus
 echo "Setting up Nexus in project $GUID-nexus"
 
 # Code to set up the Nexus. It will need to
