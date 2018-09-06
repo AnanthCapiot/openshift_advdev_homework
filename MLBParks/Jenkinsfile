@@ -100,7 +100,7 @@ podTemplate(
         sh "oc set image dc/mlbparks mlbparks=docker-registry.default.svc:5000/${GUID}-parks-dev/mlbparks:${devTag} -n ${GUID}-parks-dev"
 
         // Update the Config Map which contains the users for the Tasks application
-        sh "oc delete configmap mlbparks-config -n -n ${GUID}-parks-dev --ignore-not-found=true"
+        sh "oc delete configmap mlbparks-config -n ${GUID}-parks-dev --ignore-not-found=true"
         sh "oc create configmap mlbparks-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks -n ${GUID}-parks-dev"
         sh "oc env dc/mlbparks --from=configmap/mlbparks-config -n ${GUID}-parks-dev"
 
