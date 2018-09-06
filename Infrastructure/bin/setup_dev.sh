@@ -14,7 +14,7 @@ oc project ${GUID}-parks-dev
 
 oc policy add-role-to-user edit system:serviceaccount:70fa-jenkins:jenkins -n 70fa-parks-dev
 
-oc new-app --name=mongodb -e MONGODB_USER=mongodb_user -e MONGODB_PASSWORD=mongodb_password -e MONGODB_DATABASE=mongodb -e MONGODB_ADMIN_PASSWORD=mongodb_admin_password     registry.access.redhat.com/rhscl/mongodb-26-rhel7
+oc new-app --name=mongodb -e MONGODB_USER=mongodb -e MONGODB_PASSWORD=mongodb -e MONGODB_DATABASE=parks -e MONGODB_ADMIN_PASSWORD=mongodb_admin_password     registry.access.redhat.com/rhscl/mongodb-26-rhel7
 oc rollout pause dc/mongodb 
 echo "apiVersion: "v1"
 kind: "PersistentVolumeClaim"
@@ -47,9 +47,9 @@ oc expose dc mlbparks --port 8080
 oc expose dc nationalparks --port 8080
 oc expose dc parksmap --port 8080
 
-oc expose svc mlbparks 
-oc expose svc nationalparks 
-oc expose svc parksmap 
+oc expose svc mlbparks -l type=parksmap-backend
+oc expose svc nationalparks  -l type=parksmap-backend
+oc expose svc parksmap  -l type=parksmap-backend
 
 echo "DB_HOST=mongodb
 DB_PORT=27017
@@ -60,8 +60,8 @@ DB_NAME=parks" > application-db.properties
 oc create configmap mlbparks-config --from-literal="application-db.properties=Placeholder"
 oc create configmap nationalparks-config --from-literal="application-db.properties=Placeholder"
 
-oc env dc/mlbparks --from=configmap/mlbparks-config
-oc env dc/nationalparks --from=configmap/nationalparks-config
+# oc env dc/mlbparks --from=configmap/mlbparks-config
+# oc env dc/nationalparks --from=configmap/nationalparks-config
 
 oc patch dc/mlbparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Ignore, execNewPod: {containerName: mlbparks, command: ['curl -XGET http://localhost:8080/ws/data/load/']}}}}}"
 oc patch dc/nationalparks --patch "spec: { strategy: {type: Rolling, rollingParams: {post: {failurePolicy: Ignore, execNewPod: {containerName: nationalparks, command: ['curl -XGET http://localhost:8080/ws/data/load/']}}}}}"
