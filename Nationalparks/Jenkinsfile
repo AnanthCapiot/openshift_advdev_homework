@@ -102,7 +102,7 @@ podTemplate(
         // Update the Config Map which contains the users for the Tasks application
         sh "oc delete configmap nationalparks-config -n 70fa-parks-dev --ignore-not-found=true"
         sh "oc create configmap nationalparks-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks"
-        sh "oc env dc/nationalparks --from=configmap/nationalparks-config"
+        sh "oc env dc/nationalparks --from=configmap/nationalparks-config -n ${GUID}-parks-dev"
 
         // Deploy the development application.
         // Replace 70fa-parks-dev with the name of your production project
@@ -125,7 +125,7 @@ podTemplate(
       stage('Copy Image to Nexus Docker Registry') {
         echo "Copy image to Nexus Docker Registry"
         
-        sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) docker://docker-registry.default.svc.cluster.local:5000/70fa-parks-dev/nationalparks:${devTag} docker://nexus-registry.70fa-nexus.svc.cluster.local:5000/nationalparks:${devTag}"
+        sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) --dest-creds admin:admin123  docker://docker-registry.default.svc.cluster.local:5000/70fa-parks-dev/nationalparks:${devTag} docker://nexus-registry.70fa-nexus.svc.cluster.local:5000/nationalparks:${devTag}"
 
         // Tag the built image with the production tag.
         // Replace 70fa-parks-dev with the name of your dev project
@@ -153,7 +153,7 @@ podTemplate(
         // Update the Config Map which contains the users for the Tasks application
         sh "oc delete configmap ${destApp}-config -n 70fa-parks-prod --ignore-not-found=true"
         sh "oc create configmap ${destApp}-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks"
-        sh "oc env dc/${destApp} --from=configmap/${destApp}-config"
+        sh "oc env dc/${destApp} --from=configmap/${destApp}-config -n ${GUID}-parks-prod"
         
         // Deploy the inactive application.
         // Replace 70fa-parks-prod with the name of your production project
