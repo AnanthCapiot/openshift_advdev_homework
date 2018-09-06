@@ -128,9 +128,9 @@ oc create configmap mlbparks-blue-config --from-literal="application-db.properti
 oc create configmap nationalparks-blue-config --from-literal="application-db.properties=Placeholder"
 oc create configmap parksmap-blue-config --from-literal="application-db.properties=Placeholder"
 
-oc env dc/mlbparks-blue --from=configmap/mlbparks-blue-config
-oc env dc/nationalparks-blue --from=configmap/nationalparks-blue-config
-oc env dc/parksmap-blue --from=configmap/parksmap-blue-config
+# oc env dc/mlbparks-blue --from=configmap/mlbparks-blue-config
+# oc env dc/nationalparks-blue --from=configmap/nationalparks-blue-config
+# oc env dc/parksmap-blue --from=configmap/parksmap-blue-config
 
 oc expose svc/mlbparks-blue --name mlbparks -n 70fa-parks-prod
 oc expose svc/nationalparks-blue --name nationalparks -n 70fa-parks-prod
@@ -156,6 +156,6 @@ oc create configmap mlbparks-green-config --from-literal="application-db.propert
 oc create configmap nationalparks-green-config --from-literal="application-db.properties=Placeholder"
 oc create configmap parksmap-green-config --from-literal="application-db.properties=Placeholder"
 
-oc env dc/mlbparks-green --from=configmap/mlbparks-green-config
-oc env dc/nationalparks-green --from=configmap/nationalparks-green-config
-oc env dc/parksmap-green --from=configmap/parksmap-green-config
+# oc env dc/mlbparks-green --from=configmap/mlbparks-green-config
+# oc env dc/nationalparks-green --from=configmap/nationalparks-green-config
+# oc env dc/parksmap-green --from=configmap/parksmap-green-config
