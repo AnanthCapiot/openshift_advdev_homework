@@ -58,7 +58,7 @@ podTemplate(
 
         sh "${mvnCmd} clean package -Dmaven.test.skip=true"
       }
-
+/**
       // Using Maven run the unit tests
       stage('Unit Tests') {
         echo "Running Unit Tests"
@@ -72,7 +72,7 @@ podTemplate(
 
         sh "${mvnCmd} sonar:sonar -Dsonar.host.url=http://sonarqube-${GUID}-sonarqube.apps.${CLUSTER}/ -Dsonar.projectName=${JOB_BASE_NAME}-${devTag}"
       }
-
+**/
       // Publish the built war file to Nexus
       stage('Publish to Nexus') {
         echo "Publish to Nexus"
@@ -152,7 +152,7 @@ podTemplate(
 
         // Update the Config Map which contains the users for the Tasks application
         sh "oc delete configmap ${destApp}-config -n 70fa-parks-prod --ignore-not-found=true"
-        sh "oc create configmap ${destApp}-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks"
+        sh "oc create configmap ${destApp}-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks -n 70fa-parks-prod"
         sh "oc env dc/${destApp} --from=configmap/${destApp}-config -n ${GUID}-parks-prod"
         
         // Deploy the inactive application.

@@ -13,8 +13,9 @@ oc project ${GUID}-parks-prod
 # Code to set up the parks production project. It will need a StatefulSet MongoDB, and two applications each (Blue/Green) for NationalParks, MLBParks and Parksmap.
 # The Green services/routes need to be active initially to guarantee a successful grading pipeline run.
 
+oc policy add-role-to-group system:image-puller system:serviceaccounts:70fa-parks-prod -n 70fa-parks-dev
 oc policy add-role-to-user edit system:serviceaccount:70fa-jenkins:jenkins -n 70fa-parks-prod
-oc policy add-role-to-group system:image-puller system:serviceaccount:70fa-parks-prod -n 70fa-parks-dev
+
 # To be Implemented by Student
 
 # Replicated MongoDB setup
