@@ -7,7 +7,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 GUID=$1
-oc project $GUID-sonarqube
+oc project ${GUID}-sonarqube
 echo "Setting up Sonarqube in project $GUID-sonarqube"
 
 # Code to set up db for SQ
