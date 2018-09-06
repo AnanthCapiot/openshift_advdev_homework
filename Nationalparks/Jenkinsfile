@@ -101,7 +101,7 @@ podTemplate(
 
         // Update the Config Map which contains the users for the Tasks application
         sh "oc delete configmap nationalparks-config -n 70fa-parks-dev --ignore-not-found=true"
-        sh "oc create configmap nationalparks-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks"
+        sh "oc create configmap nationalparks-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks -n ${GUID}-parks-dev"
         sh "oc env dc/nationalparks --from=configmap/nationalparks-config -n ${GUID}-parks-dev"
 
         // Deploy the development application.
