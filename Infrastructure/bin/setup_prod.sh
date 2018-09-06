@@ -120,7 +120,7 @@ oc expose dc/mlbparks-blue --port 8080
 oc expose dc/nationalparks-blue --port 8080
 oc expose dc/parksmap-blue --port 8080
 
-oc create configmap lbparks-blue-config --from-literal="application-db.properties=Placeholder"
+oc create configmap mlbparks-blue-config --from-literal="application-db.properties=Placeholder"
 oc create configmap nationalparks-blue-config --from-literal="application-db.properties=Placeholder"
 oc create configmap parksmap-blue-config --from-literal="application-db.properties=Placeholder"
 
@@ -128,6 +128,9 @@ oc env dc/mlbparks-blue --from=configmap/mlbparks-blue-config
 oc env dc/nationalparks-blue --from=configmap/nationalparks-blue-config
 oc env dc/parksmap-blue --from=configmap/parksmap-blue-config
 
+oc expose svc/mlbparks-blue --name mlbparks -n 70fa-parks-prod
+oc expose svc/nationalparks-blue --name nationalparks -n 70fa-parks-prod
+oc expose svc/parksmap-blue --name parksmap -n 70fa-parks-prod
 
 
 # Green Application
@@ -145,7 +148,7 @@ oc expose dc/mlbparks-green --port 8080
 oc expose dc/nationalparks-green --port 8080
 oc expose dc/parksmap-green --port 8080
 
-oc create configmap lbparks-green-config --from-literal="application-db.properties=Placeholder"
+oc create configmap mlbparks-green-config --from-literal="application-db.properties=Placeholder"
 oc create configmap nationalparks-green-config --from-literal="application-db.properties=Placeholder"
 oc create configmap parksmap-green-config --from-literal="application-db.properties=Placeholder"
 

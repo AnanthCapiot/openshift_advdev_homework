@@ -110,7 +110,7 @@ podTemplate(
         openshiftVerifyService namespace: '70fa-parks-dev', svcName: 'parksmap', verbose: 'false'
       }
 
-      /**
+      
       // Run Integration Tests in the Development Environment.
       stage('Integration Tests') {
         echo "Running Integration Tests"
@@ -139,7 +139,7 @@ podTemplate(
 
       stage('Blue/Green Production Deployment') {
         
-        activeApp = sh(returnStdout: true, script: "oc get route mlbparks -n 70fa-parks-prod -o jsonpath='{ .spec.to.name }'").trim()
+        activeApp = sh(returnStdout: true, script: "oc get route parksmap -n 70fa-parks-prod -o jsonpath='{ .spec.to.name }'").trim()
         if (activeApp == "parksmap-green") {
           destApp = "parksmap-blue"
         }
@@ -151,20 +151,23 @@ podTemplate(
 
         // Update the Config Map which contains the users for the Tasks application
         sh "oc delete configmap ${destApp}-config -n 70fa-parks-prod --ignore-not-found=true"
-        // sh "oc create configmap ${destApp}-config --from-file=./configuration/application-users.properties --from-file=./configuration/application-roles.properties -n 70fa-parks-prod"
-
+        sh "oc create configmap ${destApp}-config --from-literal=DB_HOST=mongodb --from-literal=DB_PORT=27017 --from-literal=DB_USERNAME=mongodb --from-literal=DB_PASSWORD=mongodb --from-literal=DB_NAME=parks"
+        sh "oc env dc/${destApp} --from=configmap/${destApp}-config"
+        
         // Deploy the inactive application.
         // Replace 70fa-parks-prod with the name of your production project
         openshiftDeploy depCfg: destApp, namespace: '70fa-parks-prod', verbose: 'false', waitTime: '', waitUnit: 'sec'
         openshiftVerifyDeployment depCfg: destApp, namespace: '70fa-parks-prod', replicaCount: '1', verbose: 'false', verifyReplicaCount: 'true', waitTime: '', waitUnit: 'sec'
         openshiftVerifyService namespace: '70fa-parks-prod', svcName: destApp, verbose: 'false'
       }
-      **/
+      
 
       stage('Switch over to new Version') {
-        // TBD
+        input "Switch Production?"
+
         echo "Switching Production application to ${destApp}."
-        // TBD
+        
+        sh 'oc patch route parksmap -n 70fa-parks-prod -p \'{"spec":{"to":{"name":"' + destApp + '"}}}\''
       }
     }
  
