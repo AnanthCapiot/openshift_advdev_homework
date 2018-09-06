@@ -24,13 +24,17 @@ metadata:
   name: "mongodb-internal"
   labels:
     name: "mongodb"
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
+  clusterIP: None
   ports:
-  - name: "mongoport"
-    port: 27017
-  clusterIp: none
+    - name: mongodb
+      port: 27017
   selector:
-    name : "mongodb"' | oc create -f -
+    name: "mongodb"' | oc create -f -
+
+
 
 echo 'kind: Service
 apiVersion: v1
@@ -40,69 +44,68 @@ metadata:
     name: "mongodb"
 spec:
   ports:
-  - name: "mongodb"
-    port: 27017
+    - name: mongodb
+      port: 27017
   selector:
     name: "mongodb"' | oc create -f -
 
-echo 'apiVersion: apps/v1
-kind: StatefulSet
+
+
+echo 'kind: StatefulSet
+apiVersion: apps/v1
 metadata:
-  name: "mongodb-stateful-set"
-  labels:
-    name: mongodb
-    type: statefulset
+  name: "mongodb"
 spec:
-  selector:
-    matchLabels:
-      name: "mongodb"
   serviceName: "mongodb-internal"
   replicas: 3
+  selector:
+    matchLabels:
+      name: mongodb
   template:
     metadata:
       labels:
         name: "mongodb"
     spec:
       containers:
-      - name: mongo-container
-        image: registry.access.redhat.com/rhscl/mongodb-34-rhel7:latest
-        ports:
-        - containerPort: 27017
-        args:
-        - "run-mongod-replication"
-        volumeMounts:
-        - name: mongo-data
-          mountPath: "/var/lib/mongodb/data"
-        env:
-        - name: MONGODB_DATABASE
-          value: "parks"
-        - name: MONGODB_USER
-          value: "mongodb"
-        - name: MONGODB_PASSWORD
-          value: "mongodb"
-        - name: MONGODB_ADMIN_PASSWORD
-          value: "mongodb_admin_password"
-        - name: MONGODB_REPLICA_NAME
-          value: "rs0"
-        - name: MONGODB_KEYFILE_VALUE
-          value: "12345678901234567890"
-        - name: MONGODB_SERVICE_NAME
-          value: "mongodb-internal"
-        readinessProbe:
-          exec:
-            command:
-            - stat
-            - /tmp/initialized
+        - name: mongo-container
+          image: "registry.access.redhat.com/rhscl/mongodb-34-rhel7:latest"
+          ports:
+            - containerPort: 27017
+          args:
+            - "run-mongod-replication"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: "/var/lib/mongodb/data"
+          env:
+            - name: MONGODB_DATABASE
+              value: "parks"
+            - name: MONGODB_USER
+              value: "mongodb"
+            - name: MONGODB_PASSWORD
+              value: "mongodb"
+            - name: MONGODB_ADMIN_PASSWORD
+              value: "mongodb_admin_password"
+            - name: MONGODB_REPLICA_NAME
+              value: "rs0"
+            - name: MONGODB_KEYFILE_VALUE
+              value: "12345678901234567890"
+            - name: MONGODB_SERVICE_NAME
+              value: "mongodb-internal"
+          readinessProbe:
+            exec:
+              command:
+                - stat
+                - /tmp/initialized
   volumeClaimTemplates:
-  - metadata:
-      name: mongo-data
-      labels:
-        name: "mongodb"
-    spec:
-      accessModes: [ ReadWriteOnce ]
-      resources:
-        requests:
-          storage: "4Gi"' | oc create -f -
+    - metadata:
+        name: mongo-data
+        labels:
+          name: "mongodb"
+      spec:
+        accessModes: [ ReadWriteOnce ]
+        resources:
+          requests:
+            storage: "4Gi"' | oc create -f -
 
 
 # Blue Application
